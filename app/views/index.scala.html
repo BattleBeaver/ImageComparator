@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <title>
+        Image Comparator
+        </title>
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script>
+            window.onload = function () {
+                //form Submit action
+                $("form").submit(function (evt) {
+                    evt.preventDefault();
+
+                    var formData = new FormData($(this)[0]);
+
+                    $.ajax({
+                        url: '/compare',
+                        type: 'POST',
+                        data: formData,
+                        async: false,
+                        cache: false,
+                        contentType: false,
+                        enctype: 'multipart/form-data',
+                        processData: false,
+                        success: function (response) {
+                            var blob = new Blob([response], { type: "image/png" });
+
+                            if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                                // IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."
+                                window.navigator.msSaveBlob(blob, "1");
+                            } else {
+                                var URL = window.URL || window.webkitURL;
+                                var downloadUrl = URL.createObjectURL(blob);
+
+                                    // use HTML5 a[download] attribute to specify filename
+                                    var a = document.createElement("a");
+                                    // safari doesn't support this yet
+                                    if (typeof a.download === 'undefined') {
+                                        window.location = downloadUrl;
+                                    } else {
+                                        a.href = downloadUrl;
+                                        a.download = "1";
+                                        document.body.appendChild(a);
+                                        a.click();
+                                    }
+
+                                setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100); // cleanup
+                            }
+                        }
+                    });
+                    return false;
+                });
+            }
+        </script>
+    </head>
+
+    <body>
+        <form>
+            <label>
+            From
+                <input type="file" name="from">
+            </label>
+            <label>
+            To
+                <input type="file" name="to">
+            </label>
+
+            <label>
+                Compare
+                <input type="submit">
+            </label>
+        </form>
+    </body>
+</html>
