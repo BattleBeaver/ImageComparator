@@ -1,21 +1,20 @@
 package controllers
 
 import play.api.mvc.{Action, Controller}
-import javax.inject.Inject
-
-import service.ImageService
+import service.ImageComparator
 
 /**
   * Created by beaver on 11.12.16.
   */
-class ImageController @Inject()(imageService: ImageService) extends Controller {
+class ImageController extends Controller {
 
   def compare = Action(parse.multipartFormData) { request =>
     val fromImage = request.body.file("from").get
     val toImage = request.body.file("to").get
 
+    val comparator = new ImageComparator(fromImage.ref.file, toImage.ref.file)
 
 
-    Ok(imageService.compare(fromImage.ref.file, toImage.ref.file)).as("image/png").withHeaders("Content-Disposition" -> "attachment")
+    Ok(comparator.compare()).as("image/png").withHeaders("Content-Disposition" -> "attachment")
   }
 }
